@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Folio Grove — Reading Tracker</title>
+  <meta name="description" content="A cozy, minimal reading tracker for the books you are reading, have finished, or set aside.">
+  <meta name="color-scheme" content="light">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#collection">Skip to your books</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div class="brand-text">
+          <h1 class="brand-name">Folio Grove</h1>
+          <p class="brand-tagline">Keep track of the stories that stay with you.</p>
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary" id="add-book-btn">
+        <span class="btn-glyph" aria-hidden="true">+</span> Add Book
+      </button>
+    </div>
+  </header>
+
+  <main class="wrap main-content">
+
+    <!-- Dashboard -->
+    <section class="dashboard" aria-labelledby="dashboard-heading">
+      <h2 id="dashboard-heading" class="sr-only">Reading summary</h2>
+      <ul class="stat-grid">
+        <li class="stat">
+          <span class="stat-value" id="stat-total">0</span>
+          <span class="stat-label">Total Books</span>
+        </li>
+        <li class="stat">
+          <span class="stat-value" id="stat-reading">0</span>
+          <span class="stat-label">Currently Reading</span>
+        </li>
+        <li class="stat">
+          <span class="stat-value" id="stat-finished">0</span>
+          <span class="stat-label">Finished</span>
+        </li>
+        <li class="stat">
+          <span class="stat-value" id="stat-dnf">0</span>
+          <span class="stat-label">DNF</span>
+        </li>
+        <li class="stat stat-accent">
+          <span class="stat-value" id="stat-pages">0</span>
+          <span class="stat-label">Pages Read</span>
+        </li>
+      </ul>
+    </section>
+
+    <p class="storage-notice" id="storage-notice" role="alert" hidden></p>
+
+    <!-- Controls -->
+    <section class="controls" aria-label="Filter, sort and view controls">
+      <div class="controls-row">
+        <div class="filters" role="group" aria-label="Filter by status">
+          <button type="button" class="chip is-active" data-filter="all" aria-pressed="true">
+            All <span class="chip-count" data-count="all">0</span>
+          </button>
+          <button type="button" class="chip" data-filter="reading" aria-pressed="false">
+            Reading <span class="chip-count" data-count="reading">0</span>
+          </button>
+          <button type="button" class="chip" data-filter="finished" aria-pressed="false">
+            Finished <span class="chip-count" data-count="finished">0</span>
+          </button>
+          <button type="button" class="chip" data-filter="toread" aria-pressed="false">
+            To Read <span class="chip-count" data-count="toread">0</span>
+          </button>
+          <button type="button" class="chip" data-filter="dnf" aria-pressed="false">
+            DNF <span class="chip-count" data-count="dnf">0</span>
+          </button>
+        </div>
+
+        <div class="view-toggle" role="group" aria-label="View mode">
+          <button type="button" class="view-btn is-active" data-view="card" aria-pressed="true">Cards</button>
+          <button type="button" class="view-btn" data-view="list" aria-pressed="false">List</button>
+        </div>
+      </div>
+
+      <div class="controls-row controls-row-quiet">
+        <div class="period-filter" role="group" aria-label="Filter by when you started reading">
+          <span class="control-label" id="period-legend">Started</span>
+
+          <select id="period-select" aria-labelledby="period-legend">
+            <option value="any">Any time</option>
+            <option value="none">No start date</option>
+          </select>
+
+          <button type="button" class="link-btn" id="period-clear" hidden>Clear</button>
+        </div>
+
+        <div class="sort-field">
+          <label for="sort-select">Sort</label>
+          <select id="sort-select">
+            <option value="added">Recently added</option>
+            <option value="title">Title (A–Z)</option>
+            <option value="rating">Rating (high first)</option>
+            <option value="pages">Pages (most first)</option>
+            <option value="started">Date started (newest)</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Book collection -->
+    <section id="collection" class="collection" aria-labelledby="collection-heading" tabindex="-1">
+      <h2 id="collection-heading" class="sr-only">Your books</h2>
+
+      <div class="book-grid" id="book-grid" hidden></div>
+
+      <div class="table-wrap" id="book-table-wrap" hidden>
+        <table class="book-table">
+          <caption class="sr-only">Your books, in a compact list</caption>
+          <thead>
+            <tr>
+              <th scope="col">Title</th>
+              <th scope="col">Status</th>
+              <th scope="col">Started</th>
+              <th scope="col">Finished</th>
+              <th scope="col" class="num">Pages</th>
+              <th scope="col">Rating</th>
+              <th scope="col" class="num">Days</th>
+              <th scope="col" class="num">Pages/day</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="book-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="empty-state" id="empty-state" hidden>
+        <span class="empty-mark" aria-hidden="true"></span>
+        <p class="empty-title" id="empty-title"></p>
+        <p class="empty-text" id="empty-text"></p>
+        <button type="button" class="btn btn-primary" id="empty-action" data-role="add" hidden>Add your first book</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p class="wrap">Folio Grove — your shelf lives in this browser, and nowhere else.</p>
+  </footer>
+
+  <!-- Add / Edit dialog -->
+  <dialog class="dialog" id="book-dialog" aria-labelledby="book-dialog-title">
+    <form class="book-form" id="book-form" novalidate>
+      <header class="dialog-header">
+        <h2 id="book-dialog-title">Add a book</h2>
+        <p class="dialog-sub" id="book-dialog-sub">Only the title is required — the rest can wait.</p>
+      </header>
+
+      <div class="field field-primary">
+        <label for="field-title">Title <span class="tag tag-req">required</span></label>
+        <input type="text" id="field-title" name="title" maxlength="200" autocomplete="off"
+               placeholder="e.g. The Hobbit" aria-describedby="error-title">
+        <p class="field-error" id="error-title" hidden></p>
+      </div>
+
+      <p class="form-divider"><span>Optional — add or change these any time</span></p>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="field-start">Date started</label>
+          <input type="date" id="field-start" name="startDate">
+        </div>
+        <div class="field">
+          <label for="field-finish">Date finished</label>
+          <input type="date" id="field-finish" name="finishDate" aria-describedby="error-finish">
+          <p class="field-error" id="error-finish" hidden></p>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="field-pages">Number of pages</label>
+          <input type="number" id="field-pages" name="pages" min="1" step="1" inputmode="numeric"
+                 placeholder="e.g. 310" aria-describedby="error-pages">
+          <p class="field-error" id="error-pages" hidden></p>
+        </div>
+
+        <fieldset class="field rating-field">
+          <legend>Rating</legend>
+          <div class="rating-row">
+            <div class="star-group" id="star-group" role="radiogroup"
+                 aria-label="Rating, 1 to 5 stars" data-rating="0">
+              <button type="button" class="star" role="radio" aria-checked="false" aria-label="1 star"  data-value="1" tabindex="0">★</button>
+              <button type="button" class="star" role="radio" aria-checked="false" aria-label="2 stars" data-value="2" tabindex="-1">★</button>
+              <button type="button" class="star" role="radio" aria-checked="false" aria-label="3 stars" data-value="3" tabindex="-1">★</button>
+              <button type="button" class="star" role="radio" aria-checked="false" aria-label="4 stars" data-value="4" tabindex="-1">★</button>
+              <button type="button" class="star" role="radio" aria-checked="false" aria-label="5 stars" data-value="5" tabindex="-1">★</button>
+            </div>
+            <button type="button" class="link-btn" id="clear-rating" hidden>Clear</button>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="field checkbox-field">
+        <input type="checkbox" id="field-dnf" name="dnf">
+        <label for="field-dnf">
+          Did not finish (DNF)
+          <span class="checkbox-hint">Marks the book as set aside, whatever the dates say.</span>
+        </label>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-ghost" id="book-cancel">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="book-save">Add book</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Delete confirmation dialog -->
+  <dialog class="dialog dialog-sm" id="delete-dialog" aria-labelledby="delete-dialog-title">
+    <h2 id="delete-dialog-title">Remove this book?</h2>
+    <p class="delete-text" id="delete-text"></p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-ghost" id="delete-cancel">Cancel</button>
+      <button type="button" class="btn btn-danger" id="delete-confirm">Delete</button>
+    </div>
+  </dialog>
+
+  <p class="sr-only" id="live-region" role="status" aria-live="polite"></p>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
